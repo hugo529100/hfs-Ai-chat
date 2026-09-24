@@ -269,6 +269,5 @@ style.css     # Styles: panel, sidebar, messages, mobile, print, tables
 License & Credits
 Author: Hug3O
 
-Repository: https://github.com/Hug3O/Ai-chat
 
 Built for HFS (HTTP File Server) with React and the HFS plugin API.
