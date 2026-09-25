@@ -283,7 +283,10 @@
         const [editing, setEditing] = useState(null);
         const [editValue, setEditValue] = useState('');
 
-        const [isFullscreen, setIsFullscreen] = useState(() => !!document.fullscreenElement);
+        // ===== 全屏状态：由面板自身 state 驱动 =====
+        const [isFullscreen, setIsFullscreen] = useState(false);
+        const isFullscreenRef = useRef(false);
+        useEffect(() => { isFullscreenRef.current = isFullscreen; }, [isFullscreen]);
 
         const [fontSize, setFontSize] = useState(() => {
             try {
@@ -347,8 +350,12 @@
             return () => window.removeEventListener('resize', onResize);
         }, []);
 
+        // ===== 只同步“面板自己”的全屏状态；宿主全屏变化不影响 =====
         useEffect(() => {
-            const onChange = () => setIsFullscreen(!!document.fullscreenElement);
+            const onChange = () => {
+                const owns = document.fullscreenElement === panelRef.current;
+                if (!owns) setIsFullscreen(false);
+            };
             document.addEventListener('fullscreenchange', onChange);
             document.addEventListener('webkitfullscreenchange', onChange);
             document.addEventListener('msfullscreenchange', onChange);
@@ -359,24 +366,27 @@
             };
         }, []);
 
+        // ===== 全屏切换：判断依据是面板自身 state，目标是面板元素 =====
         const toggleFullscreen = useCallback(() => {
+            const el = panelRef.current;
+            if (!el) return;
             try {
-                if (!document.fullscreenElement) {
-                    const el = document.documentElement;
-                    const p = el.requestFullscreen
+                if (!isFullscreenRef.current) {
+                    const req = el.requestFullscreen
                         ? el.requestFullscreen()
                         : (el.webkitRequestFullscreen
                             ? el.webkitRequestFullscreen()
                             : (el.msRequestFullscreen ? el.msRequestFullscreen() : null));
-                    if (p && p.then) {
-                        p.then(() => setShowSidebar(true)).catch(() => {});
+                    if (req && req.then) {
+                        req.then(() => setIsFullscreen(true)).catch(() => {});
                     } else {
-                        setShowSidebar(true);
+                        setIsFullscreen(true);
                     }
                 } else {
                     if (document.exitFullscreen) document.exitFullscreen();
                     else if (document.webkitExitFullscreen) document.webkitExitFullscreen();
                     else if (document.msExitFullscreen) document.msExitFullscreen();
+                    setIsFullscreen(false);
                 }
             } catch (e) {
                 HFS.toast('Fullscreen not supported', 'error');

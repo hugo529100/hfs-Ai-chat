@@ -1,4 +1,4 @@
-exports.version = 6.2
+exports.version = 6.3
 exports.description = "AI Chat - Admin-only chat UI for HFS. Multi-model, streaming, Markdown, per-model isolation, cross-device realtime sync, activity-based sorting, optional web search, retry & edit-resend & regenerate & per-message delete. Paginated pair-based storage + full-text search + daily snapshot txt backup."
 exports.apiRequired = 8.87
 exports.repo = "Hug3O/Ai-chat"
